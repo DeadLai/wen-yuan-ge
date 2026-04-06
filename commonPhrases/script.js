@@ -61,7 +61,7 @@ const displayPhrases = (docs) => {
             const data = doc.data();
             const item = document.createElement('div');
             item.setAttribute('data-doc-id', doc.id);
-            item.innerHTML = `<div style="text-align: center; font-size: 1.2em;"><span class="edit-icon" style="font-size: 0.8em;">✏️</span> <span id="phrase-${doc.id}" class="chinese-word">${data.chinese}</span> <span class="speaker-icon" style="font-size: 0.8em;">🔊</span></div><div>含义: <span class="vietnam-style">${data.meaning}</span><br>拼音: <span class="vietnam-style">${data.pinyin}</span></div>`;
+            item.innerHTML = `<div style="text-align: center; font-size: 1.2em;"><span class="edit-icon" style="font-size: 0.8em;">✏️</span> <span id="phrase-${doc.id}" class="chinese-word">${data.chinese}</span> <span class="speaker-icon" style="font-size: 0.8em;">🔊</span></div><div>意思: <span class="vietnam-style">${data.meaning}</span><br>拼音: <span class="vietnam-style">${data.pinyin}</span></div>`;
             const speakerIcon = item.querySelector('.speaker-icon');
             if (speakerIcon) {
                 speakerIcon.addEventListener('click', () => {
