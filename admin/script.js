@@ -13,6 +13,39 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        window.db = db; // Set window.db for compatibility
+
+        async function checkLogin(username, password) {
+            try {
+                const usernameLower = username.toLowerCase();
+                if (!window.db) {
+                    console.error('window.db not set');
+                    return false;
+                }
+                const docRef = window.db.collection('role').doc(usernameLower);
+                let docSnap;
+                try {
+                    docSnap = await docRef.get();
+                } catch (error) {
+                    console.error('Error getting doc:', error);
+                    return false;
+                }
+                if (docSnap && docSnap.exists) {
+                    const data = docSnap.data();
+                    if (data.password === password) {
+                        return true;
+                    } else {
+                        console.error('Password mismatch');
+                    }
+                } else {
+                    console.error('No document found for username:', username);
+                }
+                return false;
+            } catch (error) {
+                console.error('Error in checkLogin:', error);
+                return false;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             let activateBtn;
@@ -20,7 +53,6 @@
             const adminContent = document.getElementById('admin-content');
             const searchForm = document.getElementById('search-form');
             const results = document.getElementById('results');
-            const logoutBtn = document.getElementById('logout-btn');
             const notification = document.getElementById('notification');
 
             // Check auth state
@@ -41,17 +73,12 @@
                 const userInput = document.getElementById('user').value;
                 const password = document.getElementById('password').value;
                 try {
-                    const doc = await db.collection('admin').doc('account').get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.user === userInput && data.password === password) {
-                            localStorage.setItem('isLoggedIn', 'true');
-                            checkAuthState();
-                        } else {
-                            alert('Login failed: Username or password is incorrect.');
-                        }
+                    const isValid = await checkLogin(userInput, password);
+                    if (isValid) {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        checkAuthState();
                     } else {
-                        alert('Login failed: Admin account does not exist.');
+                        alert('Login failed: Username or password is incorrect.');
                     }
                 } catch (error) {
                     alert('Login failed: ' + error.message);
@@ -72,11 +99,6 @@
                 }
             });
 
-            // Logout
-            logoutBtn.addEventListener('click', () => {
-                localStorage.removeItem('isLoggedIn');
-                checkAuthState();
-            });
 
             // Password toggle
             const toggleBtn = document.getElementById('toggle-password');
@@ -84,10 +106,10 @@
                 const passwordInput = document.getElementById('password');
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
-                    toggleBtn.innerHTML = '🙈';
+                    toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
                 } else {
                     passwordInput.type = 'password';
-                    toggleBtn.innerHTML = '👁️';
+                    toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
                 }
             });
 
