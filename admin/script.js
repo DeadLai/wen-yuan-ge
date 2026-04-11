@@ -14,6 +14,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         window.db = db; // Set window.db for compatibility
+        let isLoggedIn = false;
 
         async function checkLogin(username, password) {
             try {
@@ -57,7 +58,6 @@
 
             // Check auth state
             function checkAuthState() {
-                const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
                 if (isLoggedIn) {
                     loginForm.style.display = 'none';
                     adminContent.style.display = 'block';
@@ -75,7 +75,7 @@
                 try {
                     const isValid = await checkLogin(userInput, password);
                     if (isValid) {
-                        localStorage.setItem('isLoggedIn', 'true');
+                        isLoggedIn = true;
                         checkAuthState();
                     } else {
                         alert('Login failed: Username or password is incorrect.');
