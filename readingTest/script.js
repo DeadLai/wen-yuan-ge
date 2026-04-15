@@ -11,6 +11,15 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// Background selection logic
+let selectedVideo = localStorage.getItem('selectedBackground') || 'background.mp4';
+if (selectedVideo.startsWith('background/')) {
+    selectedVideo = selectedVideo.replace('background/', '../background/');
+} else if (selectedVideo === 'background.mp4') {
+    selectedVideo = '../background.mp4';
+}
+document.getElementById('video').src = selectedVideo;
+
 window.addEventListener('load', async () => {
     document.getElementById('loading-spinner').style.display = 'block';
     // Load quiz settings

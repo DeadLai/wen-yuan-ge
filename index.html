@@ -28,7 +28,8 @@
                     <li><a href="#" id="check-vocab-link">✦ 检查词汇</a></li>
                     <li><a href="commonPhrases/index.html" id="common-phrases-link" style="background: linear-gradient(to right, green, orange); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✦ 日常用语</a></li>
                     <li><a href="https://xian-yin-ge-v2.netlify.app" target="_blank" id="xian-yin-ge-link">✦ 仙音阁</a></li>
-                </ul>
+                    <li><a href="#" id="select-background-link">✦ 选择背景</a></li>
+                    </ul>
             </div>
         </div>
         <div id="vocab-count" style="font-size: 20px; background: linear-gradient(to right, white, gray); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 0.5; padding: 0; margin: 0;">
@@ -139,7 +140,18 @@
                 <button type="button" id="close-check-vocab-modal">关闭</button>
             </div>
         </div>
-
+        
+        <!-- Background Selection Modal -->
+        <div id="background-modal" class="vocab-form" style="display: none;">
+            <h2 style="font-weight: normal;">选择背景</h2>
+            <div id="background-thumbnails" class="background-thumbnails"></div>
+            <div id="background-loading" class="loading-spinner" style="display: none;">加载中...</div>
+            <div class="button-row">
+                <button type="button" id="confirm-background">确认</button>
+                <button type="button" id="close-background-modal">关闭</button>
+            </div>
+        </div>
+        
         <!-- Background -->
     <img id="image" src="background.png" alt="背景图像">
     <video id="video" src="background.mp4" muted autoplay loop></video>

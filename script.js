@@ -600,3 +600,69 @@ document.getElementById('listen-btn').addEventListener('click', function() {
 document.getElementById('translate-btn').addEventListener('click', function() {
     window.location.href = 'translationTest/index.html';
 });
+
+// Background selection logic
+let selectedVideo = localStorage.getItem('selectedBackground') || 'background.mp4';
+document.getElementById('video').src = selectedVideo;
+
+document.getElementById('select-background-link').addEventListener('click', function() {
+    document.getElementById('background-modal').style.display = 'block';
+    loadBackgroundThumbnails();
+});
+
+document.getElementById('close-background-modal').addEventListener('click', function() {
+    document.getElementById('background-modal').style.display = 'none';
+});
+
+document.getElementById('confirm-background').addEventListener('click', function() {
+    if (selectedVideo) {
+        localStorage.setItem('selectedBackground', selectedVideo);
+        document.getElementById('video').src = selectedVideo;
+        document.getElementById('background-modal').style.display = 'none';
+        window.location.reload();
+    }
+});
+
+function loadBackgroundThumbnails() {
+    const container = document.getElementById('background-thumbnails');
+    container.innerHTML = '';
+    const loading = document.getElementById('background-loading');
+    loading.style.display = 'block';
+    let loadedCount = 0;
+    const videos = ['background/1.mp4', 'background/2.mp4', 'background/3.mp4', 'background/4.mp4', 'background/5.mp4'];
+    const totalVideos = videos.length;
+    videos.forEach(videoPath => {
+        const video = document.createElement('video');
+        video.crossOrigin = 'anonymous';
+        video.src = videoPath;
+        video.style.display = 'none';
+        document.body.appendChild(video);
+        video.addEventListener('loadedmetadata', () => {
+            video.currentTime = 1;
+        });
+        video.addEventListener('seeked', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 150;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL();
+            img.classList.add('thumbnail');
+            if (selectedVideo === videoPath) {
+                img.classList.add('selected');
+            }
+            img.addEventListener('click', () => {
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('selected'));
+                img.classList.add('selected');
+                selectedVideo = videoPath;
+            });
+            container.appendChild(img);
+            loadedCount++;
+            if (loadedCount === totalVideos) {
+                loading.style.display = 'none';
+            }
+            document.body.removeChild(video);
+        });
+    });
+}
