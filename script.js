@@ -629,11 +629,12 @@ function loadBackgroundThumbnails() {
     const loading = document.getElementById('background-loading');
     loading.style.display = 'block';
     let loadedCount = 0;
-    const videos = ['background/1.mp4', 'background/2.mp4', 'background/3.mp4', 'background/4.mp4', 'background/5.mp4'];
+    const videos = ['background/1.mp4', 'background/2.mp4', 'background/3.mp4', 'background/4.mp4', 'background/5.mp4', 'background/6.mp4', 'background/7.mp4', 'background/8.mp4', 'background/9.mp4', 'background/10.mp4', 'background/11.mp4', 'background/12.mp4', 'background/13.mp4', 'background/14.mp4', 'background/15.mp4', 'background/16.mp4'];
     const totalVideos = videos.length;
     videos.forEach(videoPath => {
         const video = document.createElement('video');
         video.crossOrigin = 'anonymous';
+        video.preload = 'metadata';
         video.src = videoPath;
         video.style.display = 'none';
         document.body.appendChild(video);
