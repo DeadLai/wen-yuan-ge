@@ -59,9 +59,16 @@ Promise.all([
         }
     }
 
-    function displayVocabularies(filteredVocabularies) {
+    const itemsPerPage = 50;
+    let currentPage = 1;
+
+    function displayVocabularies(filteredVocabularies, page = 1) {
         list.innerHTML = '';
-        filteredVocabularies.forEach((data) => {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageVocabularies = filteredVocabularies.slice(startIndex, endIndex);
+
+        pageVocabularies.forEach((data) => {
             const item = document.createElement('div');
             item.setAttribute('data-doc-id', data.id);
             item.innerHTML = `<div style="text-align: center; font-size: 1.2em;"><span class="edit-icon" style="font-size: 0.8em;">✏️</span> <span id="chinese-${data.id}" class="chinese-word">${data.chinese}</span> <span class="speaker-icon" style="font-size: 0.8em;">🔊</span></div><div>意思: <span class="vietnam-style">${data.meaning}</span><br>拼音: <span class="vietnam-style">${data.pinyin}</span>${data.hanviet && data.hanviet !== data.meaning ? '<br>汉越音: <span class="vietnam-style">' + data.hanviet + '</span>' : ''}</div>`;
@@ -101,6 +108,90 @@ Promise.all([
             list.appendChild(item);
         });
         document.getElementById('vocab-count').innerHTML = '<span style="font-family: \'Ma Shan Zheng\', cursive;">总</span><br><span style="font-family: \'Ma Shan Zheng\', cursive;">共</span><br><span style="font-family: Caveat, cursive;">' + filteredVocabularies.length + '</span><br><span style="font-family: \'Ma Shan Zheng\', cursive;">词</span>';
+
+        // Append pagination to the list
+        let pagination = document.getElementById('pagination');
+        if (!pagination) {
+            pagination = document.createElement('div');
+            pagination.id = 'pagination';
+            pagination.className = 'pagination';
+            list.appendChild(pagination);
+        }
+
+        renderPagination(filteredVocabularies.length, page);
+    }
+
+    function renderPagination(totalItems, currentPage) {
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        if (totalPages <= 1) return;
+
+        // First button
+        if (currentPage > 1) {
+            const firstButton = document.createElement('button');
+            firstButton.textContent = '首页';
+            firstButton.addEventListener('click', () => {
+                updateCurrentPage(1);
+                displayVocabularies(currentFilteredVocabularies, 1);
+                list.scrollTop = 0;
+            });
+            pagination.appendChild(firstButton);
+        }
+
+        // Previous button
+        if (currentPage > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '上一页';
+            prevButton.addEventListener('click', () => {
+                updateCurrentPage(currentPage - 1);
+                displayVocabularies(currentFilteredVocabularies, currentPage - 1);
+                list.scrollTop = 0;
+            });
+            pagination.appendChild(prevButton);
+        }
+
+        // Page numbers
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                updateCurrentPage(i);
+                displayVocabularies(currentFilteredVocabularies, i);
+                list.scrollTop = 0;
+            });
+            pagination.appendChild(pageButton);
+        }
+
+        // Next button
+        if (currentPage < totalPages) {
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '下一页';
+            nextButton.addEventListener('click', () => {
+                updateCurrentPage(currentPage + 1);
+                displayVocabularies(currentFilteredVocabularies, currentPage + 1);
+                list.scrollTop = 0;
+            });
+            pagination.appendChild(nextButton);
+        }
+
+        // Last button
+        if (currentPage < totalPages) {
+            const lastButton = document.createElement('button');
+            lastButton.textContent = '末页';
+            lastButton.addEventListener('click', () => {
+                updateCurrentPage(totalPages);
+                displayVocabularies(currentFilteredVocabularies, totalPages);
+                list.scrollTop = 0;
+            });
+            pagination.appendChild(lastButton);
+        }
     }
 
     displayVocabularies(vocabularies);
@@ -109,6 +200,10 @@ Promise.all([
     let stopFlag = false;
     let playIndex = 0;
     let previousVocabId = null;
+
+    function updateCurrentPage(page) {
+        currentPage = page;
+    }
 
     function clearHighlight() {
         document.querySelectorAll('.chinese-word').forEach(el => el.classList.remove('highlight', 'highlight-last'));
@@ -148,6 +243,11 @@ Promise.all([
             audio.onended = () => {
                 setTimeout(() => {
                     playIndex++;
+                    const newPage = Math.ceil((playIndex + 1) / itemsPerPage);
+                    if (newPage !== currentPage) {
+                        updateCurrentPage(newPage);
+                        displayVocabularies(currentFilteredVocabularies, newPage);
+                    }
                     playNext();
                 }, 1000);
             };
@@ -159,6 +259,11 @@ Promise.all([
                 utterance.onend = () => {
                     setTimeout(() => {
                         playIndex++;
+                        const newPage = Math.ceil((playIndex + 1) / itemsPerPage);
+                        if (newPage !== currentPage) {
+                            updateCurrentPage(newPage);
+                            displayVocabularies(currentFilteredVocabularies, newPage);
+                        }
                         playNext();
                     }, 1000);
                 };
@@ -179,6 +284,7 @@ Promise.all([
             return matchesSearch && matchesCategory;
         });
         filtered.sort((a, b) => (a.pinyin || '').localeCompare(b.pinyin || ''));
+        updateCurrentPage(1);
         displayVocabularies(filtered);
         currentFilteredVocabularies = filtered;
     });
@@ -196,6 +302,7 @@ Promise.all([
             return matchesSearch && matchesCategory;
         });
         filtered.sort((a, b) => (a.pinyin || '').localeCompare(b.pinyin || ''));
+        updateCurrentPage(1);
         displayVocabularies(filtered);
         currentFilteredVocabularies = filtered;
     });
@@ -204,7 +311,7 @@ Promise.all([
     const button = document.getElementById('listen-all-btn');
     button.addEventListener('click', function() {
         if (playState === 'idle') {
-            playIndex = 0;
+            playIndex = (currentPage - 1) * itemsPerPage;
             stopFlag = false;
             playState = 'playing';
             button.textContent = '停止';
@@ -216,7 +323,7 @@ Promise.all([
             button.textContent = '从头播放';
             clearHighlight();
         } else if (playState === 'stopped') {
-            playIndex = 0;
+            playIndex = (currentPage - 1) * itemsPerPage;
             stopFlag = false;
             playState = 'playing';
             button.textContent = '停止';
