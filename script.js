@@ -126,7 +126,11 @@ Promise.all([
         pagination.innerHTML = '';
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        if (totalPages <= 1) return;
+        if (totalPages <= 1) {
+            pagination.style.display = 'none';
+            return;
+        }
+        pagination.style.display = 'flex';
 
         // First button
         if (currentPage > 1) {
