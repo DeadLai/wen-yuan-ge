@@ -609,6 +609,14 @@ document.getElementById('translate-btn').addEventListener('click', function() {
 let selectedVideo = localStorage.getItem('selectedBackground') || 'background.mp4';
 document.getElementById('video').src = selectedVideo;
 
+const backgroundItems = Array.from({ length: 11 }, (_, index) => {
+    const id = index + 1;
+    return {
+        video: `background/${id}.mp4`,
+        thumb: `background/${id}.jpg`
+    };
+});
+
 document.getElementById('select-background-link').addEventListener('click', function() {
     document.getElementById('background-modal').style.display = 'block';
     loadBackgroundThumbnails();
@@ -629,45 +637,46 @@ document.getElementById('confirm-background').addEventListener('click', function
 
 function loadBackgroundThumbnails() {
     const container = document.getElementById('background-thumbnails');
-    container.innerHTML = '';
     const loading = document.getElementById('background-loading');
+    container.innerHTML = '';
     loading.style.display = 'block';
-    let loadedCount = 0;
-    const videos = ['background/1.mp4', 'background/2.mp4', 'background/3.mp4', 'background/4.mp4', 'background/5.mp4', 'background/6.mp4', 'background/7.mp4', 'background/8.mp4', 'background/9.mp4', 'background/10.mp4', 'background/11.mp4', 'background/12.mp4', 'background/13.mp4', 'background/14.mp4', 'background/15.mp4', 'background/16.mp4'];
-    const totalVideos = videos.length;
-    videos.forEach(videoPath => {
-        const video = document.createElement('video');
-        video.crossOrigin = 'anonymous';
-        video.preload = 'metadata';
-        video.src = videoPath;
-        video.style.display = 'none';
-        document.body.appendChild(video);
-        video.addEventListener('loadedmetadata', () => {
-            video.currentTime = 1;
+
+    backgroundItems.forEach(({ video, thumb }) => {
+        const img = document.createElement('img');
+        img.src = thumb;
+        img.alt = video;
+        img.loading = 'lazy';
+        img.classList.add('thumbnail');
+
+        if (selectedVideo === video) {
+            img.classList.add('selected');
+        }
+
+        img.addEventListener('click', () => {
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('selected'));
+            img.classList.add('selected');
+            selectedVideo = video;
         });
-        video.addEventListener('seeked', () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 150;
-            canvas.height = 100;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const img = document.createElement('img');
-            img.src = canvas.toDataURL();
-            img.classList.add('thumbnail');
-            if (selectedVideo === videoPath) {
-                img.classList.add('selected');
-            }
-            img.addEventListener('click', () => {
-                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('selected'));
-                img.classList.add('selected');
-                selectedVideo = videoPath;
-            });
-            container.appendChild(img);
-            loadedCount++;
-            if (loadedCount === totalVideos) {
+
+        img.addEventListener('load', () => {
+            const allThumbsLoaded = Array.from(container.querySelectorAll('.thumbnail')).every(el => el.complete);
+            if (allThumbsLoaded) {
                 loading.style.display = 'none';
             }
-            document.body.removeChild(video);
         });
+
+        img.addEventListener('error', () => {
+            img.src = 'background.png';
+            const allThumbsLoaded = Array.from(container.querySelectorAll('.thumbnail')).every(el => el.complete);
+            if (allThumbsLoaded) {
+                loading.style.display = 'none';
+            }
+        });
+
+        container.appendChild(img);
     });
+
+    if (backgroundItems.length === 0) {
+        loading.style.display = 'none';
+    }
 }
